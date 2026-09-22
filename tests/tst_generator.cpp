@@ -28,6 +28,7 @@
 #include <QJsonObject>
 #include <QElapsedTimer>
 #include <QProcess>
+#include <QProcessEnvironment>
 
 #include <cstdio>
 #include <QRandomGenerator>
@@ -135,6 +136,12 @@ RunResult run(const QString &program, const QStringList &args, const QString &wo
     QProcess p;
     p.setWorkingDirectory(workDir);
     p.setProcessChannelMode(QProcess::SeparateChannels);
+    // The programs print UTF-8 (the samples contain Cyrillic). On Windows Python
+    // would encode its output with the ANSI code page of the system instead.
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QStringLiteral("PYTHONIOENCODING"), QStringLiteral("utf-8"));
+    env.insert(QStringLiteral("PYTHONUTF8"), QStringLiteral("1"));
+    p.setProcessEnvironment(env);
     p.start(program, args);
     if (!p.waitForStarted(10000))
         return result;
