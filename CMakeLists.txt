@@ -99,11 +99,20 @@ add_library(afce_app OBJECT
     blockeditdialog.cpp blockeditdialog.h
     importdialog.cpp importdialog.h
     codeeditor.cpp codeeditor.h
-    afce.qrc
 )
-set_target_properties(afce_app PROPERTIES AUTORCC ON) # afce.qrc (images)
 target_include_directories(afce_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(afce_app PUBLIC afce_model afce_generator afce_codeimport)
+
+# Images (:/images/...): the file list of afce.qrc. qt_add_resources instead of
+# AUTORCC, which does not work for OBJECT libraries with the Visual Studio generator.
+file(STRINGS afce.qrc AFCE_QRC_LINES REGEX "<file>")
+set(AFCE_IMAGE_FILES)
+foreach(line IN LISTS AFCE_QRC_LINES)
+    string(REGEX REPLACE ".*<file>(.*)</file>.*" "\\1" file "${line}")
+    list(APPEND AFCE_IMAGE_FILES "${file}")
+endforeach()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS afce.qrc)
+qt_add_resources(afce_app "afce_images" PREFIX "/" FILES ${AFCE_IMAGE_FILES})
 
 file(GLOB_RECURSE AFCE_HELP_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS help/*)
 qt_add_resources(afce_app "afce_help" PREFIX "/" FILES ${AFCE_HELP_FILES})

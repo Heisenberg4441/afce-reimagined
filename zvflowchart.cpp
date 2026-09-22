@@ -2207,7 +2207,7 @@ void QBlock::paint(QPainter *canvas, bool fontSizeInPoints) const
   const QFont textFont = chartFont(family, kFontPx, z, canvas->device());
   const QFont labelFont = chartFont(family, kLabelPx, z, canvas->device());
   QColor labelColor = ink;
-  labelColor.setAlphaF(0.85);
+  labelColor.setAlphaF(0.85f);
   const QPen linePen(ink, lw, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
   const QPen shapePen(selected ? accent : ink, selected ? lw * 1.5 : lw, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
   const bool rounded = !st.monochrome();
