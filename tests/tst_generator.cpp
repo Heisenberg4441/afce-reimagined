@@ -145,8 +145,9 @@ RunResult run(const QString &program, const QStringList &args, const QString &wo
         return result;
     }
     result.exitCode = p.exitStatus() == QProcess::NormalExit ? p.exitCode() : -1;
-    result.out = QString::fromUtf8(p.readAllStandardOutput());
-    result.err = QString::fromUtf8(p.readAllStandardError());
+    // Windows programs write "\r\n" to text-mode stdout
+    result.out = QString::fromUtf8(p.readAllStandardOutput()).replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+    result.err = QString::fromUtf8(p.readAllStandardError()).replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
     return result;
 }
 
@@ -154,7 +155,8 @@ QString tool(const QStringList &names)
 {
     for (const QString &n : names) {
         const QString path = QStandardPaths::findExecutable(n);
-        if (!path.isEmpty())
+        // Windows: the "python3" in WindowsApps is a Microsoft Store stub, not an interpreter
+        if (!path.isEmpty() && !path.contains(QLatin1String("WindowsApps"), Qt::CaseInsensitive))
             return path;
     }
     return QString();
@@ -1664,7 +1666,7 @@ void Test_generator::goldenSyntax()
     QStringList args;
     QString suffix;
     if (id == QLatin1String("py")) {
-        program = tool({QStringLiteral("python3")});
+        program = tool({QStringLiteral("python3"), QStringLiteral("python")});
         args << QStringLiteral("-m") << QStringLiteral("py_compile");
         suffix = QStringLiteral(".py");
     } else if (id == QLatin1String("js")) {
@@ -1767,7 +1769,11 @@ void Test_generator::semantic()
         if (compiler.isEmpty())
             return false;
         writeText(dir.filePath(file), code);
+#ifdef Q_OS_WIN
+        const QString exe = dir.filePath(QStringLiteral("prog.exe"));
+#else
         const QString exe = dir.filePath(QStringLiteral("prog"));
+#endif
         const RunResult build = run(compiler, QStringList(flags) << dir.filePath(file) << QStringLiteral("-o") << exe, dir.path());
         if (build.exitCode != 0) {
             result = build;
@@ -1782,9 +1788,14 @@ void Test_generator::semantic()
     // C and C++ programs declare their variables themselves (the generator does it)
     const QStringList warnings = {QStringLiteral("-Wall"), QStringLiteral("-Wextra"), QStringLiteral("-Werror"),
                                   QStringLiteral("-Wno-unused-variable"), QStringLiteral("-Wno-unused-but-set-variable"),
-                                  QStringLiteral("-Wno-unused-parameter")};
+                                  QStringLiteral("-Wno-unused-parameter")
+#ifdef Q_OS_WIN
+                                  // the MSVC runtime headers deprecate scanf & co.
+                                  , QStringLiteral("-D_CRT_SECURE_NO_WARNINGS")
+#endif
+    };
     if (id == QLatin1String("py"))
-        available = runScript({QStringLiteral("python3")}, QStringLiteral("prog.py"));
+        available = runScript({QStringLiteral("python3"), QStringLiteral("python")}, QStringLiteral("prog.py"));
     else if (id == QLatin1String("js"))
         available = runScript({QStringLiteral("node")}, QStringLiteral("prog.js"));
     else if (id == QLatin1String("ruby"))

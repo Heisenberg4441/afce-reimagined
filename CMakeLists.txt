@@ -39,6 +39,14 @@ option(AFCE_DEPLOY_QT "Bundle the Qt libraries on 'cmake --install' (macdeployqt
 
 set(AFCE_BUNDLE_ID "io.github.viktor-zin.afce")
 
+# The same main-thread stack as on Linux and macOS (8 MB instead of Windows' 1 MB): deeply
+# nested flowcharts and sources are processed recursively (by AFCE and by QtXml).
+if(MSVC)
+    add_link_options(/STACK:8388608)
+elseif(MINGW)
+    add_link_options(-Wl,--stack,8388608)
+endif()
+
 # Compiler warnings for all targets of the project (C++ only: not for the Windows resource compiler).
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra>")

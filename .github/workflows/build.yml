@@ -78,6 +78,12 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build -C Release --output-on-failure --timeout 600
 
+      - name: Test details
+        if: failure()
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build -C Release --rerun-failed --verbose --timeout 600 || true
+
       # ---- packages ------------------------------------------------------------------------
       - name: Package (Linux AppImage)
         if: runner.os == 'Linux'
