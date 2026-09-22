@@ -93,9 +93,12 @@ jobs:
             exe=$(cd "$(dirname "$exe")" && pwd)/$(basename "$exe")
             echo "===== $t ($exe)"
             for fn in $("$exe" -functions | sed 's/(.*//'); do
-              (cd build/tests && "$exe" "$fn" > /dev/null 2>&1)
+              (cd build/tests && "$exe" "$fn" > "$RUNNER_TEMP/fn.log" 2>&1)
               code=$?
-              [ $code -ne 0 ] && printf '%s -> exit %d (0x%X)\n' "$fn" "$code" "$code"
+              if [ $code -ne 0 ]; then
+                printf '%s -> exit %d (0x%X)\n' "$fn" "$code" "$code"
+                tail -c 20000 "$RUNNER_TEMP/fn.log"
+              fi
             done
             echo "===== $t done"
           done

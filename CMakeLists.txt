@@ -213,6 +213,7 @@ endif()
 if(UNIX AND NOT APPLE)
     install(FILES afce.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
     install(FILES afce.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/32x32/apps)
+    install(FILES images/appicon.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps RENAME afce.svg)
     install(FILES afce.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/32x32/mimetypes
             RENAME application-x-afce.png)
     install(FILES afce.png DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps)

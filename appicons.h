@@ -24,6 +24,10 @@ namespace afce {
 // rendered at the device pixel ratio of the screen (crisp on HiDPI).
 QIcon uiIcon(const QString &name);
 
+// The application icon (:/images/appicon.svg, and appicon-small.svg for the
+// small sizes), rendered for every size the window manager may ask for.
+QIcon applicationIcon();
+
 } // namespace afce
 
 #endif // APPICONS_H

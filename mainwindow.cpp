@@ -500,7 +500,7 @@ void DocumentTab::mousePressEvent(QMouseEvent *event)
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
-    QApplication::setWindowIcon(QIcon(QStringLiteral(":/images/icon.png")));
+    QApplication::setWindowIcon(afce::applicationIcon());
     fAssignSymbol = QStringLiteral(":=");
     setAcceptDrops(true);
     setUnifiedTitleAndToolBarOnMac(true);

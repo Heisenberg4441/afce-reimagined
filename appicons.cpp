@@ -134,4 +134,31 @@ QIcon uiIcon(const QString &name)
     return QIcon(new TintedSvgIconEngine(name));
 }
 
+QIcon applicationIcon()
+{
+    static const QIcon icon = []() {
+        QIcon result;
+        // the simplified drawing for small sizes, the detailed one from 48 px
+        const QList<QPair<int, QString>> sources = {
+            {16, QStringLiteral(":/images/appicon-small.svg")},  {24, QStringLiteral(":/images/appicon-small.svg")},
+            {32, QStringLiteral(":/images/appicon-small.svg")},  {48, QStringLiteral(":/images/appicon.svg")},
+            {64, QStringLiteral(":/images/appicon.svg")},        {128, QStringLiteral(":/images/appicon.svg")},
+            {256, QStringLiteral(":/images/appicon.svg")},       {512, QStringLiteral(":/images/appicon.svg")}};
+        for (const auto &source : sources) {
+            QSvgRenderer renderer(source.second);
+            if (!renderer.isValid())
+                continue;
+            QPixmap pixmap(source.first, source.first);
+            pixmap.fill(Qt::transparent);
+            QPainter painter(&pixmap);
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            renderer.render(&painter);
+            painter.end();
+            result.addPixmap(pixmap);
+        }
+        return result;
+    }();
+    return icon;
+}
+
 } // namespace afce
