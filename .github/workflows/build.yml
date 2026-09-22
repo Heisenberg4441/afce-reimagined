@@ -82,7 +82,16 @@ jobs:
         if: failure()
         env:
           QT_QPA_PLATFORM: offscreen
-        run: ctest --test-dir build -C Release --rerun-failed --verbose --timeout 600 || true
+        run: |
+          ctest --test-dir build -C Release --rerun-failed --verbose --timeout 600 || true
+          # a crashing test loses its buffered stdout: log to a file instead
+          for t in tst_generator tst_flowchart tst_mainwindow tst_importdialog; do
+            exe=$(find build -name "$t" -o -name "$t.exe" | head -1)
+            [ -n "$exe" ] || continue
+            echo "===== $t"
+            (cd build/tests && "$OLDPWD/$exe" -v1 -o "$OLDPWD/$t.log,txt" > /dev/null 2>&1; echo "exit=$?")
+            tail -c 8000 "$t.log" || true
+          done
 
       # ---- packages ------------------------------------------------------------------------
       - name: Package (Linux AppImage)
