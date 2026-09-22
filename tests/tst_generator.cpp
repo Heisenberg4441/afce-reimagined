@@ -28,6 +28,8 @@
 #include <QJsonObject>
 #include <QElapsedTimer>
 #include <QProcess>
+
+#include <cstdio>
 #include <QRandomGenerator>
 #include <QStandardPaths>
 #include <QTemporaryDir>
@@ -1892,5 +1894,15 @@ void Test_generator::robustness()
     QVERIFY2(timer.elapsed() < 60000, "generation is too slow");
 }
 
-QTEST_GUILESS_MAIN(Test_generator)
+int main(int argc, char *argv[])
+{
+    // Unbuffered: a test that dies (or is killed) would otherwise lose its log.
+    setvbuf(stdout, nullptr, _IONBF, 0);
+    setvbuf(stderr, nullptr, _IONBF, 0);
+    QCoreApplication app(argc, argv);
+    app.setAttribute(Qt::AA_Use96Dpi, true);
+    Test_generator tc;
+    QTEST_SET_MAIN_SOURCE_PATH
+    return QTest::qExec(&tc, argc, argv);
+}
 #include "tst_generator.moc"
